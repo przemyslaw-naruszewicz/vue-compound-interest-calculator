@@ -1,6 +1,8 @@
 # Vue Compound Interest Calculator
 
-A Vue 3 + Vite project for a compound interest calculator. Currently shows a welcome screen.
+A Vue 3 + Vite compound interest calculator demo. Adjust the initial investment,
+monthly contribution, duration, and annual nominal return to see a live projection.
+The interface is in English; amounts default to Polish złoty (`pl-PL` / `PLN`).
 
 ## Requirements
 

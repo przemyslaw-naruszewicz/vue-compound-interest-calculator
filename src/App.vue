@@ -1,7 +1,18 @@
+<script setup>
+import { InvestmentCalculator } from './index.js'
+</script>
+
 <template>
-  <main class="welcome">
-    <p class="eyebrow">Coming soon</p>
-    <h1>Compound Interest Calculator</h1>
-    <p>A place to plan your savings and explore how they could grow.</p>
+  <main class="demo">
+    <header class="demo__header">
+      <p class="demo__eyebrow">Savings planner</p>
+      <h1>Compound Interest Calculator</h1>
+      <p class="demo__intro">
+        Explore how your savings could grow with monthly contributions and compound interest.
+        Adjust the amounts, duration and annual return to see your projection update.
+        Amounts are shown in Polish złoty (PLN).
+      </p>
+    </header>
+    <InvestmentCalculator />
   </main>
 </template>

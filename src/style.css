@@ -17,24 +17,24 @@ body {
 }
 
 #app {
-  display: grid;
   min-height: 100vh;
   min-height: 100svh;
-  place-items: center;
-  padding: clamp(1.25rem, 5vw, 4rem);
+  padding: clamp(1rem, 4vw, 3rem);
 }
 
-.welcome {
+.demo {
   width: 100%;
-  max-width: 48rem;
-  padding: clamp(1.5rem, 6vw, 4rem);
-  border: 1px solid #d4e3da;
-  border-radius: 1.5rem;
-  background: #fff;
+  max-width: 56rem;
+  margin-inline: auto;
 }
 
-.eyebrow {
-  margin: 0 0 1.5rem;
+.demo__header {
+  margin-bottom: 2rem;
+  overflow-wrap: anywhere;
+}
+
+.demo__eyebrow {
+  margin: 0 0 0.75rem;
   color: #32694f;
   font-size: 0.875rem;
   font-weight: 650;
@@ -42,15 +42,16 @@ body {
   text-transform: uppercase;
 }
 
-h1 {
-  margin: 0 0 1.25rem;
+.demo h1 {
+  margin: 0 0 1rem;
   font-size: clamp(2rem, 6vw, 3.5rem);
   line-height: 1.1;
   letter-spacing: -0.04em;
   overflow-wrap: break-word;
 }
 
-.welcome > p:last-child {
+.demo__intro {
+  max-width: 44rem;
   margin: 0;
   color: #4c6259;
   font-size: 1.125rem;

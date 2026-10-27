@@ -111,3 +111,48 @@ explanations, unrelated host styles, and overflow at 320, 640, and 1280 px.
 Screenshots include invalid defaults at 320 px and the full host at each width.
 The script fails on browser warnings or errors. This check does not replace
 screen-reader testing or Firefox/Safari acceptance.
+
+## Standalone demo checks
+
+The demo check opens the actual application, including its global styles and
+page metadata. Start local development and production preview in separate
+terminals:
+
+```sh
+npm run dev -- --host 0.0.0.0 --port 5174 --strictPort
+```
+
+```sh
+npm run build
+npm run preview -- --host 0.0.0.0 --port 5175 --strictPort
+```
+
+To include Docker startup, also run `docker compose up` on the default port
+5173. Prepare screenshots and run the same checks against all three servers:
+
+```sh
+mkdir -p /tmp/demo-artifacts
+docker run --rm --network host --user 0:0 \
+  --mount type=bind,src="$PWD/tests/browser",dst=/checks,readonly \
+  --mount type=bind,src=/tmp/demo-artifacts,dst=/artifacts \
+  --env NODE_PATH=/home/mermaidcli/node_modules \
+  --env DEMO_ARTIFACT_DIR=/artifacts \
+  --entrypoint node \
+  ghcr.io/mermaid-js/mermaid-cli/mermaid-cli:11.16.0 \
+  /checks/check-demo.mjs \
+  http://127.0.0.1:5174 http://127.0.0.1:5173 http://127.0.0.1:5175
+```
+
+Pass only the URLs of running servers. Host networking must be available to
+Docker (native on Linux; enable it in Docker Desktop where supported).
+The check uses the existing pinned Chromium image and adds no npm dependencies.
+
+Checks cover the title and document language, reference PLN totals, all four
+parameter edits, keyboard slider input, tab order and visible focus, invalid
+drafts and recovery without resetting other inputs, neutral and zero-return
+states, maximum values, and overflow at 320, 640, and 1280 px. At 200% CSS zoom,
+the check verifies that controls and results remain reachable by scrolling and
+controls still accept keyboard input. It fails on console errors/warnings or
+requests to other origins, and saves screenshots in `/tmp/demo-artifacts/`.
+CSS zoom is an automated content-scaling check; native browser zoom,
+screen-reader testing, Firefox, and Safari require separate acceptance checks.
