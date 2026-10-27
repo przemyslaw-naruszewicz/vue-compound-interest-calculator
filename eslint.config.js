@@ -6,11 +6,11 @@ import globals from 'globals'
 export default defineConfig([
   globalIgnores(['dist/**', 'dist-ssr/**', 'coverage/**', 'docs_internal/**']),
   {
-    files: ['**/*.{js,vue}'],
+    files: ['**/*.{js,mjs,vue}'],
     extends: [js.configs.recommended, vue.configs['flat/essential']],
   },
   {
-    files: ['src/**/*.{js,vue}', 'tests/**/*.js'],
+    files: ['src/**/*.{js,vue}', 'tests/**/*.{js,mjs}'],
     languageOptions: {
       globals: globals.browser,
     },
