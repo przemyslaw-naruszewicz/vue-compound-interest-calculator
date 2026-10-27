@@ -1,0 +1,29 @@
+services:
+  vue:
+    image: node:24-bookworm-slim
+    working_dir: /app
+    init: true
+    ports:
+      - "127.0.0.1:${VUE_PORT:-5173}:5173"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - npm_cache:/root/.npm
+    command:
+      - sh
+      - -c
+      - |
+        if [ ! -f package.json ]; then
+          echo "Brak package.json. Dodaj aplikację Vue + Vite w katalogu projektu. Szczegóły: README.md." >&2
+          exit 1
+        fi
+        if [ -f package-lock.json ]; then
+          npm ci --no-audit --no-fund || exit 1
+        else
+          npm install --no-audit --no-fund || exit 1
+        fi
+        exec npm run dev -- --host 0.0.0.0 --port 5173 --strictPort
+
+volumes:
+  node_modules:
+  npm_cache:
