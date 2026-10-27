@@ -70,3 +70,44 @@ decimal drafts, invalid-input recovery, zero states, bounded proportions,
 bar semantics, text contrast of at least 4.5:1, and no overflow at 320, 640, and
 1280 px. It saves full-page and summary screenshots in
 `/tmp/investment-results-artifacts/`. No external fonts or data are loaded.
+
+## Public component checks
+
+This host imports only `InvestmentCalculator` from `src/index.js`, without demo
+styles. It renders an interactive instance with a parent listener that mutates
+received payloads, an instance with invalid defaults (including a numeric string),
+and an instance with maximum values. The production build verifies runtime
+validation without Vue's development-only prop warnings.
+
+To inspect the host interactively, open
+`http://localhost:5173/tests/browser/public-component.html` with Vite running.
+The intentionally invalid prop type produces a Vue warning in development.
+For automated checks, build the host and prepare the artifact directory:
+
+```sh
+node --input-type=module -e 'import { build } from "vite"; await build({ build: { outDir: "/tmp/public-component-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/public-component.html" } } });'
+mkdir -p /tmp/public-component-artifacts
+```
+
+Run Chromium against the production host:
+
+```sh
+docker run --rm --network none --user 0:0 \
+  --mount type=bind,src="$PWD/tests/browser",dst=/checks,readonly \
+  --mount type=bind,src=/tmp/public-component-browser,dst=/build,readonly \
+  --mount type=bind,src=/tmp/public-component-artifacts,dst=/artifacts \
+  --env NODE_PATH=/home/mermaidcli/node_modules \
+  --env PUBLIC_ARTIFACT_DIR=/artifacts \
+  --entrypoint node \
+  ghcr.io/mermaid-js/mermaid-cli/mermaid-cli:11.16.0 \
+  /checks/check-public-component.mjs /build
+```
+
+Checks cover the initial parent notification, equivalent drafts, invalid-state
+deduplication, recovery, payload isolation, independent instances and IDs,
+reactive formatting and fallbacks, ignored default changes, keyed remounts,
+keyboard slider recovery, focus outlines, validity messages, financial
+explanations, unrelated host styles, and overflow at 320, 640, and 1280 px.
+Screenshots include invalid defaults at 320 px and the full host at each width.
+The script fails on browser warnings or errors. This check does not replace
+screen-reader testing or Firefox/Safari acceptance.
