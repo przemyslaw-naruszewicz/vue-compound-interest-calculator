@@ -55,6 +55,11 @@ internal planning documents are excluded. No formatter is required.
 The test dependencies stay on Vue Test Utils 2.4 and jsdom 29 to support the
 minimum Node.js 24.12.0 version.
 
+Real-browser checks and reproduction commands are in
+[`tests/browser/README.md`](tests/browser/README.md). The dated Chromium/Firefox
+reuse and accessibility matrix, including pending manual checks and guidance for
+hosts with multiple Vue app roots, is in [`docs/acceptance.md`](docs/acceptance.md).
+
 ## Build
 
 With Docker running:

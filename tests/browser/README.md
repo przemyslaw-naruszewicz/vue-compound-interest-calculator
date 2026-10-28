@@ -156,3 +156,52 @@ controls still accept keyboard input. It fails on console errors/warnings or
 requests to other origins, and saves screenshots in `/tmp/demo-artifacts/`.
 CSS zoom is an automated content-scaling check; native browser zoom,
 screen-reader testing, Firefox, and Safari require separate acceptance checks.
+
+## Independent reuse acceptance (Chromium and Firefox)
+
+`reuse.html` mounts the shared two-instance fixture from
+`tests/fixtures/CalculatorReuseHost.vue`. The fixture imports only the public
+`InvestmentCalculator` export. The first instance uses the defaults; the second
+uses different amounts, duration, return, locale, and currency. Each has its own
+parent event listener. Both sit inside a host form alongside unrelated host UI.
+No demo CSS, application bootstrap, aliases, or global stores are loaded.
+
+For interactive checks, open
+`http://localhost:5173/tests/browser/reuse.html` with Vite running.
+For production acceptance, build the isolated fixture and a browser tools image:
+
+```sh
+node --input-type=module -e 'import { build } from "vite"; await build({ build: { outDir: "/tmp/calculator-reuse-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/reuse.html" } } });'
+docker build -t calculator-browser-checks:008 -f tests/browser/Dockerfile tests/browser
+mkdir -p /tmp/calculator-reuse-artifacts
+docker run --rm --network none --user 0:0 \
+  --mount type=bind,src="$PWD/tests/browser",dst=/checks,readonly \
+  --mount type=bind,src=/tmp/calculator-reuse-browser,dst=/build,readonly \
+  --mount type=bind,src=/tmp/calculator-reuse-artifacts,dst=/artifacts \
+  --env REUSE_ARTIFACT_DIR=/artifacts \
+  calculator-browser-checks:008
+```
+
+The image installs Debian Chromium and Firefox ESR and pins Puppeteer to
+24.43.1, outside the application's npm dependencies. Building it needs network
+access; the checks run offline. Debian browser versions may change when the
+image is rebuilt; each JSON report records the versions actually used.
+Append `chrome` or `firefox` after the image name to run one engine.
+
+The same assertions run in both engines. They cover reference results, all four
+controls, dot/comma keyboard entry, invalid drafts and recovery, isolated drafts,
+results/errors/parent events, local formatting and ignored defaults, IDs and
+label/help/error references, untouched host styles, keyboard order, slider keys,
+visible focus, host Enter isolation, zero/maximum values, contrast, 44 px control
+targets, overflow at 320 and 1280 px, 200% CSS zoom, and reduced motion.
+Warnings, errors, external requests, and failed assertions fail the process.
+Both engines are attempted even if one fails.
+
+Screenshots and per-engine JSON reports are written to
+`/tmp/calculator-reuse-artifacts/`. A failed engine records its error and, when
+available, a failure screenshot. Reports explicitly leave native browser zoom
+and screen-reader speech/navigation pending. Automated DOM semantics and CSS
+scaling do not replace those manual checks.
+
+The dated acceptance matrix, manual steps, and remaining checks are in
+[`docs/acceptance.md`](../../docs/acceptance.md).
