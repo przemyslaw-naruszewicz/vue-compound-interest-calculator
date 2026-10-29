@@ -23,7 +23,7 @@ function checkAssociations(wrapper) {
       expect(descriptions).toHaveLength(input.attributes('aria-invalid') === 'true' ? 2 : 1)
       for (const id of descriptions) expect(calculator.get(`[id="${id}"]`).text()).not.toBe('')
     }
-    expect(calculator.get(`[id="${calculator.get('section').attributes('aria-labelledby')}"]`).text())
+    expect(calculator.get(`[id="${calculator.get('.investment-summary').attributes('aria-labelledby')}"]`).text())
       .toBe('Investment projection')
   }
 }

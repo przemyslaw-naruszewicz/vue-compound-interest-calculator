@@ -246,6 +246,7 @@ test('includes financial assumptions in every independent instance without a pag
     const explanation = calculator.get('.investment-calculator__assumptions').text()
     for (const text of [
       'constant nominal annual return', 'compounded monthly', 'contributions at month-end',
+      'One-time contributions are added at year-end', 'Final-year contributions earn no interest',
       'Excludes taxes, fees and inflation', 'Actual returns vary and may be negative',
     ]) expect(explanation).toContain(text)
   }

@@ -242,6 +242,12 @@ async function checkBrowser(engine) {
       await checkFocus(field, instance)
       await page.keyboard.press('Enter')
       await page.keyboard.press('Tab')
+      if (field === 'annualReturn') {
+        assert.equal(await page.$eval(`${root(instance)} .one-time-contributions__add`, (element) => (
+          document.activeElement === element && getComputedStyle(element).outlineStyle === 'solid'
+        )), true, 'Contribution button follows the parameter controls')
+        await page.keyboard.press('Tab')
+      }
     }
     assert.equal(await text('[data-test="submissions"]'), '0')
     assert.equal(page.url(), target)

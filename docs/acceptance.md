@@ -215,3 +215,47 @@ checks passed in Chromium 156.0.8078.47 and Firefox 153.6.0; the demo checks
 passed in Chromium at 320, 640 and 1280 px. Narrow screenshots were reviewed.
 Artifacts are in `/tmp/calculator-form-heading-artifacts/` and
 `/tmp/calculator-form-heading-demo-artifacts/`.
+
+## One-time contributions — 2026-10-29
+
+The optional contribution editor supports multiple amounts and investment
+years, with year-end deposits earning interest from the following month.
+Shortening the duration preserves rows and marks out-of-range years invalid.
+The original result payload, seed-once defaults and independent state remain
+compatible. The README documents timing, validation and event semantics.
+
+Domain checks passed for omitted/empty lists, malformed values and rows,
+year/amount boundaries, duplicate years, order independence, zero return,
+final-year deposits and an independent twelve-month interest reference.
+Composable and component tests cover preserved drafts/identity/errors,
+duration recovery, add/remove focus, remount resets, instance isolation,
+normalized event deduplication, unchanged-total edits, batching and payload
+isolation.
+
+All **543 tests in 15 files**, lint without warnings, the production build and
+`git diff --check` passed on Node 24.22.1. The existing independent reuse and
+disclaimer browser regressions also passed in both engines.
+
+The offline contribution browser check passed in Chromium 156.0.8078.47 and
+Firefox 153.6.0 against production builds of the demo and the independent reuse
+host without demo CSS:
+
+- Enter/Space activation, tab order, visible focus and predictable next/previous/
+  add-button focus after removal passed. Enter in text inputs does not submit
+  the host form. Rows leaving with an animation are inert.
+- Decimal entry, incomplete rows, invalid years/amounts, duration changes and
+  recovery passed; surviving rows retain their IDs and values. Parent results
+  and the untouched second instance were checked in the reuse host.
+- Labels, help/error references and IDs remain unique. Controls meet 44 px
+  touch targets. No horizontal overflow occurred at 320, 640 and 1280 px.
+- Chromium checked normal and reduced-motion transition durations; Firefox
+  checked reduced motion through its profile preference. The disclaimer stays
+  visible. No browser warnings/errors or failed asset requests occurred.
+
+Desktop and narrow screenshots from both browsers were visually reviewed.
+Reports and screenshots are in `/tmp/calculator-contributions-artifacts/`;
+reproduction commands are in
+[the browser guide](../tests/browser/README.md#one-time-contribution-checks).
+Screen-reader speech/navigation and native browser zoom remain pending. Manual
+acceptance should include adding/removing contributions, their unique labels,
+error recovery and focus announcements in both instances.

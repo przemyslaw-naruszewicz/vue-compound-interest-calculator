@@ -53,12 +53,42 @@ export function useInvestmentCalculator(initialParameters = DEFAULT_INVESTMENT_P
   )
   const durationYears = ref(initialParameters.durationYears)
   const annualReturn = ref(initialParameters.annualReturn)
+  const contributionDrafts = ref([])
+  let nextContributionId = 1
+  const parsedContributions = computed(() => contributionDrafts.value.map((row) => ({
+    amount: parseInvestmentInput(row.amountDraft),
+    year: row.yearDraft.trim() === ''
+      ? { error: 'required' }
+      : /^\d+$/.test(row.yearDraft.trim())
+        ? { value: Number(row.yearDraft.trim()) }
+        : { error: 'invalid_format' },
+  })))
+
+  function addContribution() {
+    const id = nextContributionId++
+    contributionDrafts.value.push({ id, amountDraft: '', yearDraft: '1' })
+    return id
+  }
+
+  function updateContribution(id, field, value) {
+    const row = contributionDrafts.value.find((row) => row.id === id)
+    if (row && ['amountDraft', 'yearDraft'].includes(field)) row[field] = value
+  }
+
+  function removeContribution(id) {
+    contributionDrafts.value = contributionDrafts.value.filter((row) => row.id !== id)
+  }
 
   const parameters = computed(() => ({
     initialInvestment: initialInvestment.parsed.value.value,
     monthlyContribution: monthlyContribution.parsed.value.value,
     durationYears: durationYears.value,
     annualReturn: annualReturn.value,
+    ...(contributionDrafts.value.length ? {
+      oneTimeContributions: parsedContributions.value.map(({ year, amount }) => ({
+        year: year.value, amount: amount.value,
+      })),
+    } : {}),
   }))
   const errors = computed(() => {
     const fieldErrors = validateInvestment(parameters.value)
@@ -69,18 +99,35 @@ export function useInvestmentCalculator(initialParameters = DEFAULT_INVESTMENT_P
       }
     }
 
+    parsedContributions.value.forEach((row, index) => {
+      for (const field of ['amount', 'year']) {
+        if (row[field].error) fieldErrors[`oneTimeContributions.${index}.${field}`] = row[field].error
+      }
+    })
+
     return fieldErrors
   })
   const isValid = computed(() => Object.keys(errors.value).length === 0)
   const result = computed(() => (
     isValid.value ? calculateInvestment(parameters.value) : null
   ))
+  const contributions = computed(() => contributionDrafts.value.map((row, index) => ({
+    ...row,
+    errors: {
+      amount: errors.value[`oneTimeContributions.${index}.amount`],
+      year: errors.value[`oneTimeContributions.${index}.year`],
+    },
+  })))
 
   return {
     initialInvestmentDraft: initialInvestment.draft,
     monthlyContributionDraft: monthlyContribution.draft,
     durationYears,
     annualReturn,
+    contributions,
+    addContribution,
+    updateContribution,
+    removeContribution,
     parameters,
     errors,
     isValid,

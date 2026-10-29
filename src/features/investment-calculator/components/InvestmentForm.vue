@@ -1,6 +1,7 @@
 <script setup>
 import { computed, useId } from 'vue'
 import { INVESTMENT_CONSTRAINTS } from '../domain/investmentConstraints.js'
+import { amountErrorMessage } from '../utils/amountErrorMessage.js'
 
 const props = defineProps({
   initialInvestmentDraft: { type: String, required: true },
@@ -37,20 +38,11 @@ function fieldIds(field) {
   return { id, helpId: `${id}-help`, errorId: `${id}-error` }
 }
 
-function amountError(field, label) {
-  const code = props.errors[field]
-  if (!code) return ''
-  if (code === 'required') return `${label}: enter an amount, or 0 for none.`
-  if (code === 'out_of_range' || code === 'not_finite') {
-    const { min, max } = INVESTMENT_CONSTRAINTS[field]
-    return `${label}: enter an amount from ${min} to ${max}, without grouping separators.`
-  }
-  return `${label}: use digits and up to two decimal places, with a dot or comma and no grouping separators.`
-}
-
 const amounts = computed(() => amountDefinitions.map((definition) => {
   const ids = fieldIds(definition.field)
-  const error = amountError(definition.field, definition.label)
+  const error = amountErrorMessage(
+    props.errors[definition.field], definition.label, INVESTMENT_CONSTRAINTS[definition.field],
+  )
   return {
     ...definition,
     ...ids,

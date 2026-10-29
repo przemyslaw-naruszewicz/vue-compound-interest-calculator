@@ -29,9 +29,20 @@ export function calculateInvestment(parameters) {
     throw new RangeError(`Invalid ${errors[0][0]}: ${errors[0][1]}.`)
   }
 
-  const { initialInvestment, monthlyContribution, durationYears, annualReturn } = parameters
+  const {
+    initialInvestment, monthlyContribution, durationYears, annualReturn,
+    oneTimeContributions = [],
+  } = parameters
+  const contributionsByYear = new Map()
+  // Canonical summation keeps floating-point results independent of row order.
+  for (const { year, amount } of [...oneTimeContributions].sort((a, b) => a.amount - b.amount)) {
+    contributionsByYear.set(year, (contributionsByYear.get(year) || 0) + amount)
+  }
+  const extraCapital = [...contributionsByYear.entries()]
+    .sort(([a], [b]) => a - b)
+    .reduce((total, [, amount]) => total + amount, 0)
   const months = durationYears * 12
-  const investedCapital = (initialInvestment + monthlyContribution * months) || 0
+  const investedCapital = (initialInvestment + monthlyContribution * months + extraCapital) || 0
 
   if (annualReturn === 0) {
     return { investedCapital, finalValue: investedCapital, investmentGain: 0 }
@@ -42,6 +53,9 @@ export function calculateInvestment(parameters) {
 
   for (let month = 0; month < months; month += 1) {
     balance = balance * (1 + monthlyRate) + monthlyContribution
+    if ((month + 1) % 12 === 0) {
+      balance += contributionsByYear.get((month + 1) / 12) || 0
+    }
   }
 
   return {

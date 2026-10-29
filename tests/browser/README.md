@@ -237,3 +237,30 @@ visibility with valid, invalid and all-zero inputs, text contrast of at least
 The reuse host must retain the same notice styles without demo CSS. Full-page
 and notice screenshots are saved for visual review. This does not replace
 manual screen-reader or native browser zoom checks.
+
+## One-time contribution checks
+
+Build the demo and independent reuse host together:
+
+```sh
+node --input-type=module -e 'import { build } from "vite"; await build({ base: "/", build: { outDir: "/tmp/calculator-contributions-browser", emptyOutDir: true, rollupOptions: { input: ["index.html", "tests/browser/reuse.html"] } } });'
+mkdir -p /tmp/calculator-contributions-artifacts
+docker run --rm --network none --user 0:0 \
+  --mount type=bind,src="$PWD/tests/browser",dst=/checks,readonly \
+  --mount type=bind,src=/tmp/calculator-contributions-browser,dst=/build,readonly \
+  --mount type=bind,src=/tmp/calculator-contributions-artifacts,dst=/artifacts \
+  --env CONTRIBUTIONS_ARTIFACT_DIR=/artifacts \
+  --entrypoint node calculator-browser-checks:008 \
+  /checks/check-contributions.mjs /build
+```
+
+Use the browser image built in the independent reuse section. Chromium and
+Firefox check adding/removing rows with Enter and Space, tab order, visible
+focus, focus after removal, decimal entry, preserved duration errors/recovery,
+row identity, labels/error associations, 44 px targets, isolated instances and
+parent results, host-form isolation, and the visible disclaimer. Layout checks
+and screenshots cover 320, 640 and 1280 px with multiple rows and errors.
+Chromium checks normal and reduced-motion transition durations; Firefox uses
+its reduced-motion profile preference. Reports and screenshots are saved in
+`/tmp/calculator-contributions-artifacts/`. Screen-reader speech/navigation and
+native browser zoom remain manual checks.

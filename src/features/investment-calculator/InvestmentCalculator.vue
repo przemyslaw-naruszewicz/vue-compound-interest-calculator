@@ -2,6 +2,7 @@
 import { computed, useId, watch } from 'vue'
 import InvestmentForm from './components/InvestmentForm.vue'
 import InvestmentSummary from './components/InvestmentSummary.vue'
+import OneTimeContributions from './components/OneTimeContributions.vue'
 import { useInvestmentCalculator } from './composables/useInvestmentCalculator.js'
 import { DEFAULT_INVESTMENT_PARAMETERS } from './domain/investmentConstraints.js'
 import { createCurrencyFormatter } from './utils/formatCurrency.js'
@@ -20,6 +21,7 @@ const disclaimerHeadingId = `${useId()}-disclaimer-heading`
 const {
   initialInvestmentDraft, monthlyContributionDraft, durationYears, annualReturn,
   parameters, errors, isValid, result,
+  contributions, addContribution, updateContribution, removeContribution,
 } = useInvestmentCalculator({
   initialInvestment: props.defaultInitialInvestment,
   monthlyContribution: props.defaultMonthlyContribution,
@@ -33,11 +35,10 @@ const statusMessage = computed(() => isValid.value
 )
 
 watch(
-  () => isValid.value ? Object.values(parameters.value) : null,
-  (tuple, previousTuple) => {
-    if (tuple === previousTuple) return
-    if (tuple && previousTuple && tuple.every((value, index) => value === previousTuple[index])) return
-    emit('result-change', tuple ? { ...result.value } : null)
+  () => isValid.value ? JSON.stringify(parameters.value) : null,
+  (signature, previousSignature) => {
+    if (signature === previousSignature) return
+    emit('result-change', signature ? { ...result.value } : null)
   },
   { immediate: true },
 )
@@ -53,6 +54,14 @@ watch(
       :errors="errors"
       :currency="formatter.currency"
     />
+    <OneTimeContributions
+      :contributions="contributions"
+      :duration-years="durationYears"
+      :currency="formatter.currency"
+      @add="addContribution"
+      @update="updateContribution"
+      @remove="removeContribution"
+    />
     <p class="investment-calculator__status" role="status" aria-live="polite" aria-atomic="true">
       {{ statusMessage }}
     </p>
@@ -66,7 +75,9 @@ watch(
     <InvestmentSummary :result="result" :locale="locale" :currency="currency" />
     <p class="investment-calculator__assumptions">
       Illustrative projection using a constant nominal annual return, compounded monthly,
-      with contributions at month-end. Excludes taxes, fees and inflation. Actual returns
+      with regular contributions at month-end. One-time contributions are added at year-end,
+      after interest and the regular contribution, and earn interest from the following month.
+      Final-year contributions earn no interest. Excludes taxes, fees and inflation. Actual returns
       vary and may be negative.
     </p>
   </div>

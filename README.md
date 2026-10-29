@@ -1,13 +1,17 @@
 # Vue Compound Interest Calculator
 
 A Vue 3 + Vite demo and reusable component for exploring savings with monthly
-contributions. Results update as you edit. The UI is in English; number formatting
+contributions and optional one-time savings. Results update as you edit. The UI is in English; number formatting
 defaults to `pl-PL` / `PLN`.
 
 ## Calculation and inputs
 
 The model uses a constant nominal annual return, divided by 12 for monthly
 compounding. Each month earns interest before the month-end contribution is added.
+One-time contributions are added at the end of their selected investment year,
+after that month's interest and regular contribution. They earn interest from
+the following month; final-year contributions earn no interest. Multiple
+contributions in the same year are summed, independently of row order.
 It excludes taxes, fees, inflation and market volatility. Results are illustrative,
 not guaranteed returns or investment advice. Negative returns are outside the
 input range, although real investments can lose value.
@@ -24,6 +28,15 @@ Amounts accept whole numbers or up to two decimal places with a dot or comma
 signs and scientific notation are unsupported. Duration and return use sliders.
 Empty, incomplete (`1.`), malformed or out-of-range values keep the draft visible,
 show a field error and hide results until all inputs are valid again.
+
+Use **Add contribution** in the optional **One-time contributions** section to
+add extra savings. Each row starts with an empty amount and investment year 1;
+complete or remove it to restore results. Amounts follow the same monetary rules
+and 0–1000000000 range above, including zero. Years accept whole-number digits
+from 1 to the current duration. Shortening the duration preserves all rows and
+flags years outside the new range; extending it can restore validity. Each row
+has a Remove button. Adding a row focuses its amount; removing one focuses the
+next amount, previous amount, or Add contribution when the list is empty.
 
 Results contain invested capital, final value and gain. Calculations retain
 JavaScript number precision; only displayed amounts are rounded by currency
@@ -153,7 +166,7 @@ back to `PLN`. Fallbacks are independent and show an explanatory notice.
 { investedCapital, finalValue, investmentGain }
 ```
 
-`investedCapital` is initial investment plus all contributions; `investmentGain`
+`investedCapital` is initial investment plus all regular and one-time contributions; `investmentGain`
 is final value minus invested capital. An initial event fires during setup with
 the result or `null` if defaults are invalid. Changed valid numeric parameters
 emit a result, even if totals stay the same. Becoming invalid emits `null` once;
@@ -161,6 +174,17 @@ further invalid edits emit nothing. Recovery emits a result again. Equivalent
 drafts (`500`, `500.00`, `500,00`) do not emit duplicates. Synchronous edits within
 one Vue update cycle are batched into one event for the final state. Formatting
 changes do not emit. Parent handlers must accept `null`, as in the example.
+
+Each instance starts with an empty one-time contribution list. There is no
+contribution seeding prop; a keyed remount clears the list. The normalized domain
+model optionally accepts `oneTimeContributions: [{ year, amount }]`, containing
+numbers only. Omission or `[]` preserves the original model; malformed supplied
+lists/rows are rejected. UI row IDs stay outside this numeric model. Event change
+detection includes the normalized list: valid year/amount edits and adding or
+removing a valid contribution emit even when totals stay equal (for example,
+zero amounts or year changes at zero return). Equivalent decimal drafts do not
+emit duplicates. Invalid-state suppression, recovery, batching and payload
+isolation apply to contribution edits as well. The event payload is unchanged.
 
 Instances have independent state and IDs within one Vue app. If the host creates
 multiple Vue app roots on one page, assign a distinct `app.config.idPrefix` to

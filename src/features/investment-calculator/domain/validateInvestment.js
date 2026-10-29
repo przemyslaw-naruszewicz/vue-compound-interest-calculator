@@ -6,6 +6,7 @@ import { INVESTMENT_CONSTRAINTS } from './investmentConstraints.js'
  * @property {number} monthlyContribution
  * @property {number} durationYears
  * @property {number} annualReturn
+ * @property {Array<{year: number, amount: number}>} [oneTimeContributions]
  */
 
 /**
@@ -19,7 +20,7 @@ import { INVESTMENT_CONSTRAINTS } from './investmentConstraints.js'
  * Type and finiteness checks precede bounds, then integer/step checks.
  *
  * @param {Object} parameters
- * @returns {Partial<Record<keyof InvestmentParameters, InvestmentErrorCode>>}
+ * @returns {Record<string, InvestmentErrorCode>} Contribution errors use indexed field paths.
  * @throws {TypeError} If parameters is not a non-null, non-array object.
  */
 export function validateInvestment(parameters) {
@@ -30,27 +31,43 @@ export function validateInvestment(parameters) {
   const errors = {}
 
   for (const [field, constraints] of Object.entries(INVESTMENT_CONSTRAINTS)) {
-    const value = parameters[field]
+    const error = validateNumber(parameters[field], constraints)
+    if (error) errors[field] = error
+  }
 
-    if (value === undefined) {
-      errors[field] = 'required'
-    } else if (typeof value !== 'number') {
-      errors[field] = 'invalid_type'
-    } else if (!Number.isFinite(value)) {
-      errors[field] = 'not_finite'
-    } else if (value < constraints.min || value > constraints.max) {
-      errors[field] = 'out_of_range'
-    } else if (field === 'durationYears') {
-      if (!Number.isInteger(value)) errors[field] = 'not_integer'
+  if (Object.hasOwn(parameters, 'oneTimeContributions')) {
+    if (!Array.isArray(parameters.oneTimeContributions)) {
+      errors.oneTimeContributions = 'invalid_type'
     } else {
-      const scaled = value * constraints.scale
-      const tolerance = 2 * Number.EPSILON * Math.max(1, Math.abs(scaled))
-
-      if (Math.abs(scaled - Math.round(scaled)) > tolerance) {
-        errors[field] = 'invalid_step'
+      for (let index = 0; index < parameters.oneTimeContributions.length; index += 1) {
+        const contribution = parameters.oneTimeContributions[index]
+        const path = `oneTimeContributions.${index}`
+        if (!contribution || typeof contribution !== 'object' || Array.isArray(contribution)) {
+          errors[path] = 'invalid_type'
+          continue
+        }
+        const amountError = validateNumber(contribution.amount, INVESTMENT_CONSTRAINTS.initialInvestment)
+        const yearError = validateNumber(contribution.year, {
+          min: 1,
+          max: errors.durationYears ? INVESTMENT_CONSTRAINTS.durationYears.max : parameters.durationYears,
+        })
+        if (amountError) errors[`${path}.amount`] = amountError
+        if (yearError) errors[`${path}.year`] = yearError
       }
     }
   }
 
   return errors
+}
+
+function validateNumber(value, constraints) {
+  if (value === undefined) return 'required'
+  if (typeof value !== 'number') return 'invalid_type'
+  if (!Number.isFinite(value)) return 'not_finite'
+  if (value < constraints.min || value > constraints.max) return 'out_of_range'
+  if (!constraints.scale) return Number.isInteger(value) ? undefined : 'not_integer'
+
+  const scaled = value * constraints.scale
+  const tolerance = 2 * Number.EPSILON * Math.max(1, Math.abs(scaled))
+  if (Math.abs(scaled - Math.round(scaled)) > tolerance) return 'invalid_step'
 }
