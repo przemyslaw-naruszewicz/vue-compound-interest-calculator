@@ -14,7 +14,7 @@ services:
       - -c
       - |
         if [ ! -f package.json ]; then
-          echo "Brak package.json. Dodaj aplikację Vue + Vite w katalogu projektu. Szczegóły: README.md." >&2
+          echo "Missing package.json. Add the Vue + Vite application in the project directory. See README.md." >&2
           exit 1
         fi
         if [ -f package-lock.json ]; then

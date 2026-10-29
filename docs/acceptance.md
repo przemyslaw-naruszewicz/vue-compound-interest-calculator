@@ -168,7 +168,7 @@ with read-only validation separated from deployment permissions.
 | GitHub PR validation and main deployment runs | Pending; local actionlint/review is not a hosted run. |
 | Published URL, revision/run URL and live browser verification | Pending; no publication performed. |
 
-The GUI instructions are in the [README](../README.md#github-pages-preparation).
+The GUI instructions are in the [README](../README.md#github-pages).
 Record actual workflow/site URLs, published revision, date, and live results
 when release checklist 011 is performed. The earlier native browser zoom and
 screen-reader checks also remain pending.
