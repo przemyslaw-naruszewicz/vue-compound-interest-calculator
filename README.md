@@ -75,4 +75,20 @@ npm run build
 npm run preview
 ```
 
-Output: `dist/`. The preview server is for local checks; production hosting needs separate setup.
+Output: `dist/`. Open
+[http://localhost:4173/vue-compound-interest-calculator/](http://localhost:4173/vue-compound-interest-calculator/)
+for production preview. Local and Docker development continue to use `/`.
+The preview server is for local checks only.
+
+## GitHub Pages
+
+In **Settings → Pages → Build and deployment → Source**, select **GitHub Actions**.
+The existing [workflow](.github/workflows/pages.yml) runs lint, tests, and a build
+for pull requests and pushes to `main`, then deploys `dist/` from `main` after
+successful checks.
+
+Expected URL: <https://przemyslaw-naruszewicz.github.io/vue-compound-interest-calculator/>.
+If the repository name or domain changes, update the production base in `vite.config.js`.
+
+Pages setup and live-site verification are pending; see the
+[verification record](docs/acceptance.md#pages-build-and-ci-preparation).

@@ -11,7 +11,7 @@ The automated checks use Puppeteer and Chromium from a pinned Docker image;
 they do not add project dependencies. Build the host from the repository root:
 
 ```sh
-node --input-type=module -e 'import { build } from "vite"; await build({ build: { outDir: "/tmp/investment-form-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/investment-form.html" } } });'
+node --input-type=module -e 'import { build } from "vite"; await build({ base: "/", build: { outDir: "/tmp/investment-form-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/investment-form.html" } } });'
 mkdir -p /tmp/investment-form-artifacts
 ```
 
@@ -47,7 +47,7 @@ Open `http://localhost:5173/tests/browser/investment-results.html` with Vite
 running, or build the isolated host:
 
 ```sh
-node --input-type=module -e 'import { build } from "vite"; await build({ build: { outDir: "/tmp/investment-results-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/investment-results.html" } } });'
+node --input-type=module -e 'import { build } from "vite"; await build({ base: "/", build: { outDir: "/tmp/investment-results-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/investment-results.html" } } });'
 mkdir -p /tmp/investment-results-artifacts
 ```
 
@@ -85,7 +85,7 @@ The intentionally invalid prop type produces a Vue warning in development.
 For automated checks, build the host and prepare the artifact directory:
 
 ```sh
-node --input-type=module -e 'import { build } from "vite"; await build({ build: { outDir: "/tmp/public-component-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/public-component.html" } } });'
+node --input-type=module -e 'import { build } from "vite"; await build({ base: "/", build: { outDir: "/tmp/public-component-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/public-component.html" } } });'
 mkdir -p /tmp/public-component-artifacts
 ```
 
@@ -140,15 +140,16 @@ docker run --rm --network host --user 0:0 \
   --entrypoint node \
   ghcr.io/mermaid-js/mermaid-cli/mermaid-cli:11.16.0 \
   /checks/check-demo.mjs \
-  http://127.0.0.1:5174 http://127.0.0.1:5173 http://127.0.0.1:5175
+  http://127.0.0.1:5174 http://127.0.0.1:5173 http://127.0.0.1:5175/vue-compound-interest-calculator/
 ```
 
 Pass only the URLs of running servers. Host networking must be available to
 Docker (native on Linux; enable it in Docker Desktop where supported).
 The check uses the existing pinned Chromium image and adds no npm dependencies.
 
-Checks cover the title and document language, reference PLN totals, all four
-parameter edits, keyboard slider input, tab order and visible focus, invalid
+Checks cover asset/request failures, page refresh, the title and document
+language, reference PLN totals, all four parameter edits, keyboard slider
+input, tab order and visible focus, invalid
 drafts and recovery without resetting other inputs, neutral and zero-return
 states, maximum values, and overflow at 320, 640, and 1280 px. At 200% CSS zoom,
 the check verifies that controls and results remain reachable by scrolling and
@@ -171,7 +172,7 @@ For interactive checks, open
 For production acceptance, build the isolated fixture and a browser tools image:
 
 ```sh
-node --input-type=module -e 'import { build } from "vite"; await build({ build: { outDir: "/tmp/calculator-reuse-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/reuse.html" } } });'
+node --input-type=module -e 'import { build } from "vite"; await build({ base: "/", build: { outDir: "/tmp/calculator-reuse-browser", emptyOutDir: true, rollupOptions: { input: "tests/browser/reuse.html" } } });'
 docker build -t calculator-browser-checks:008 -f tests/browser/Dockerfile tests/browser
 mkdir -p /tmp/calculator-reuse-artifacts
 docker run --rm --network none --user 0:0 \
@@ -181,6 +182,9 @@ docker run --rm --network none --user 0:0 \
   --env REUSE_ARTIFACT_DIR=/artifacts \
   calculator-browser-checks:008
 ```
+
+The isolated fixture builds explicitly use `base: "/"` because their offline
+servers serve from the origin root, independently of the demo's Pages path.
 
 The image installs Debian Chromium and Firefox ESR and pins Puppeteer to
 24.43.1, outside the application's npm dependencies. Building it needs network

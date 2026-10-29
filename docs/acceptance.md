@@ -129,3 +129,46 @@ issue when completing these steps. Leave any unperformed step pending.
 
 Firefox's test profile requests reduced motion with `ui.prefersReducedMotion=1`,
 as described in [Mozilla's reduced-motion documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/%40media/prefers-reduced-motion#user_preferences).
+
+## Pages build and CI preparation
+
+Local verification date: **2026-10-29**. Intended project-site URL, inferred
+from `origin`:
+`https://przemyslaw-naruszewicz.github.io/vue-compound-interest-calculator/`.
+This URL has not been verified as a live deployment. Production build and
+preview use `/vue-compound-interest-calculator/`; development uses `/`.
+If Pages is configured with a custom domain, change the production base to `/`
+before publication.
+
+| Local check | Result and evidence |
+| --- | --- |
+| Vite config resolution for dev/build/preview | Pass: `/`, `/vue-compound-interest-calculator/`, `/vue-compound-interest-calculator/` respectively. |
+| Lint, unit/component tests, production build | Pass: no lint warnings, 485 tests in 12 files, output in `dist/`. Node 24.22.1, npm 11.19.1. Existing lockfile unchanged. |
+| Workflow syntax | Pass: `rhysd/actionlint:1.7.12` checked `.github/workflows/pages.yml` offline. |
+| Workflow behavior review | PRs to `main` have only `contents: read`; no artifact upload/deploy. Pushes to `main` run install → lint → test → build → upload `dist/`. Deployment requires successful build, has Pages/OIDC permissions, environment `github-pages`, and concurrency group `pages`. Manual runs publish only from `main`. |
+| Local development browser checks | Pass: Chromium 156.0.8078.47 at `http://127.0.0.1:5174/`. |
+| Docker development startup and browser checks | Pass: Compose installed dependencies with `npm ci` and served `/` at port 5173; same Chromium checks passed. |
+| Production preview browser checks | Pass: same Chromium at `http://127.0.0.1:5175/vue-compound-interest-calculator/`. |
+
+Browser checks used `tests/browser/check-demo.mjs` and the existing
+`calculator-browser-checks:008` image. They covered asset/request failures,
+refresh, default totals, all four inputs, keyboard/focus, invalid drafts and
+recovery, zero return/amounts, maximum values, 320/640/1280 px layout, 200% CSS
+scaling, and clean console/network. Screenshots are local artifacts in
+`/tmp/calculator-pages-009-artifacts/`. Reproduction commands are in
+[`tests/browser/README.md`](../tests/browser/README.md#standalone-demo-checks).
+
+The workflow follows the [official Vite Pages example](https://vite.dev/guide/static-deploy#github-pages)
+and [GitHub's build/deploy requirements](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages),
+with read-only validation separated from deployment permissions.
+
+| Hosted check | Status |
+| --- | --- |
+| GUI: Settings → Pages → Source = GitHub Actions | Pending; no repository settings changed. |
+| GitHub PR validation and main deployment runs | Pending; local actionlint/review is not a hosted run. |
+| Published URL, revision/run URL and live browser verification | Pending; no publication performed. |
+
+The GUI instructions are in the [README](../README.md#github-pages-preparation).
+Record actual workflow/site URLs, published revision, date, and live results
+when release checklist 011 is performed. The earlier native browser zoom and
+screen-reader checks also remain pending.

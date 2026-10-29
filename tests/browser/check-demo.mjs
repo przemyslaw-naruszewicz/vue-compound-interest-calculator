@@ -21,6 +21,10 @@ try {
     const errors = []
     const externalRequests = []
     page.on('pageerror', (error) => errors.push(error.message))
+    page.on('requestfailed', (request) => errors.push(`Request failed: ${request.url()}`))
+    page.on('response', (response) => {
+      if (response.status() >= 400) errors.push(`HTTP ${response.status()}: ${response.url()}`)
+    })
     page.on('console', (message) => {
       if (['error', 'warn'].includes(message.type())) errors.push(message.text())
     })
@@ -69,6 +73,9 @@ try {
     assert.equal(await page.$$eval('h1', (elements) => elements.length), 1)
     assert.equal(await text('h1'), 'Compound Interest Calculator')
     assert.equal(await page.$$eval('fieldset', (elements) => elements.length), 1)
+    assert.deepEqual(await values(), [pln(106639.02), pln(70000), pln(36639.02)])
+    await page.reload({ waitUntil: 'networkidle0' })
+    await page.waitForSelector('dd')
     assert.deepEqual(await values(), [pln(106639.02), pln(70000), pln(36639.02)])
     await checkLayout('desktop defaults')
     await screenshot('desktop')
@@ -151,7 +158,7 @@ try {
     }
     assert.deepEqual(externalRequests, [])
     assert.deepEqual(errors, [])
-    process.stdout.write(`${target}: reference totals, edits, keyboard/focus, validation/recovery, zero states, maximum values, responsive layout, 200% CSS zoom and clean console passed.\n`)
+    process.stdout.write(`${target}: assets/refresh, reference totals, edits, keyboard/focus, validation/recovery, zero states, maximum values, responsive layout, 200% CSS zoom and clean console passed.\n`)
     await page.close()
   }
   process.stdout.write(`Browser: ${await browser.version()}\n`)
