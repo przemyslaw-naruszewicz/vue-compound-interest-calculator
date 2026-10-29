@@ -159,14 +159,18 @@ function updateSlider(field, event) {
 }
 
 .investment-form legend {
+  float: left;
+  width: 100%;
   max-width: 100%;
-  padding-inline: 0.375rem;
+  margin-bottom: 1rem;
+  padding: 0;
   font-size: 1.125rem;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
 
 .investment-form__fields {
+  clear: both;
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;

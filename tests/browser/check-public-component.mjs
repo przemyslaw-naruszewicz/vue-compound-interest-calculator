@@ -82,8 +82,7 @@ try {
     elements.every((element) => /constant nominal annual return, compounded monthly/.test(element.textContent)
       && /contributions at month-end/.test(element.textContent)
       && /Excludes taxes, fees and inflation/.test(element.textContent)
-      && /Actual returns\s+vary and may be negative/.test(element.textContent)
-      && /not a guarantee or investment advice/.test(element.textContent))
+      && /Actual returns\s+vary and may be negative/.test(element.textContent))
   )), true)
   assert.equal(await page.$eval('[data-test="host-text"]', (element) => {
     const style = getComputedStyle(element)

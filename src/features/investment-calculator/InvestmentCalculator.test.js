@@ -247,7 +247,6 @@ test('includes financial assumptions in every independent instance without a pag
     for (const text of [
       'constant nominal annual return', 'compounded monthly', 'contributions at month-end',
       'Excludes taxes, fees and inflation', 'Actual returns vary and may be negative',
-      'not a guarantee or investment advice',
     ]) expect(explanation).toContain(text)
   }
   const ids = wrapper.findAll('[id]').map((element) => element.attributes('id'))
@@ -257,4 +256,33 @@ test('includes financial assumptions in every independent instance without a pag
   expect(second.findAll('dd')).toHaveLength(3)
   expect(control(second, 'initialInvestment').element.value).toBe('10000')
   expect(notifications(second)).toHaveLength(1)
+})
+
+test('keeps a labelled investment disclaimer before results through invalid, zero and recovered states', async () => {
+  const wrapper = mount(InvestmentCalculator)
+  const disclaimer = wrapper.get('aside')
+  const checkDisclaimer = () => {
+    expect(disclaimer.isVisible()).toBe(true)
+    expect(disclaimer.get('h2').text()).toBe('Not investment advice')
+    expect(disclaimer.attributes('aria-labelledby')).toBe(disclaimer.get('h2').attributes('id'))
+    expect(disclaimer.get('p').text()).toBe(
+      'This calculator is for illustrative purposes only and does not constitute investment advice. Results are not guaranteed.',
+    )
+    expect(disclaimer.element.nextElementSibling).toBe(wrapper.get('.investment-summary').element)
+    expect(wrapper.find('details, dialog, [role="alert"], aside[aria-live]').exists()).toBe(false)
+  }
+
+  checkDisclaimer()
+  await control(wrapper, 'initialInvestment').setValue('')
+  expect(wrapper.find('dd').exists()).toBe(false)
+  checkDisclaimer()
+  await control(wrapper, 'initialInvestment').setValue('0')
+  await control(wrapper, 'monthlyContribution').setValue('0')
+  expect(notifications(wrapper).at(-1)).toEqual({
+    investedCapital: 0, finalValue: 0, investmentGain: 0,
+  })
+  checkDisclaimer()
+  await control(wrapper, 'initialInvestment').setValue('10000')
+  expect(wrapper.findAll('dd')).toHaveLength(3)
+  checkDisclaimer()
 })

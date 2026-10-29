@@ -118,6 +118,16 @@ async function checkBrowser(engine) {
     const checkLayout = async (label) => {
       const layout = await page.evaluate(() => ({
         pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        legendsFit: [...document.querySelectorAll('.investment-form')].every((form) => {
+          const box = form.getBoundingClientRect()
+          const title = form.querySelector('legend').getBoundingClientRect()
+          const fields = form.querySelector('.investment-form__fields').getBoundingClientRect()
+          const style = getComputedStyle(form)
+          return title.top >= box.top + parseFloat(style.paddingTop)
+            && title.left >= box.left + parseFloat(style.paddingLeft)
+            && title.right <= box.right - parseFloat(style.paddingRight) + 1
+            && title.bottom < fields.top
+        }),
         overflowing: [...document.querySelectorAll('.investment-calculator, .investment-calculator *')]
           .filter((element) => element.clientWidth > 0 && element.scrollWidth > element.clientWidth + 1)
           .map((element) => ({ tag: element.tagName, className: element.className, width: element.clientWidth, scroll: element.scrollWidth })),
@@ -127,7 +137,7 @@ async function checkBrowser(engine) {
             && bounds.left >= 0 && bounds.right <= document.documentElement.clientWidth
         }),
       }))
-      assert.deepEqual(layout, { pageFits: true, overflowing: [], controlsFit: true }, `Layout, readable content and touch targets: ${label}`)
+      assert.deepEqual(layout, { pageFits: true, legendsFit: true, overflowing: [], controlsFit: true }, `Layout, readable content and touch targets: ${label}`)
       for (const element of await page.$$('.investment-calculator input, .investment-calculator dd, .investment-form__error')) {
         await element.evaluate((node) => node.scrollIntoView({ block: 'center' }))
         assert.equal(await element.isIntersectingViewport(), true, `Reachable content: ${label}`)

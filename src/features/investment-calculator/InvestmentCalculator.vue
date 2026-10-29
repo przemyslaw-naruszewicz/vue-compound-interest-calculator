@@ -1,5 +1,5 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, useId, watch } from 'vue'
 import InvestmentForm from './components/InvestmentForm.vue'
 import InvestmentSummary from './components/InvestmentSummary.vue'
 import { useInvestmentCalculator } from './composables/useInvestmentCalculator.js'
@@ -16,6 +16,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['result-change'])
+const disclaimerHeadingId = `${useId()}-disclaimer-heading`
 const {
   initialInvestmentDraft, monthlyContributionDraft, durationYears, annualReturn,
   parameters, errors, isValid, result,
@@ -55,11 +56,18 @@ watch(
     <p class="investment-calculator__status" role="status" aria-live="polite" aria-atomic="true">
       {{ statusMessage }}
     </p>
+    <aside class="investment-calculator__disclaimer" :aria-labelledby="disclaimerHeadingId">
+      <h2 :id="disclaimerHeadingId">Not investment advice</h2>
+      <p>
+        This calculator is for illustrative purposes only and does not constitute
+        investment advice. Results are not guaranteed.
+      </p>
+    </aside>
     <InvestmentSummary :result="result" :locale="locale" :currency="currency" />
     <p class="investment-calculator__assumptions">
       Illustrative projection using a constant nominal annual return, compounded monthly,
       with contributions at month-end. Excludes taxes, fees and inflation. Actual returns
-      vary and may be negative; this is not a guarantee or investment advice.
+      vary and may be negative.
     </p>
   </div>
 </template>
@@ -92,5 +100,29 @@ watch(
   border: 1px solid #d4e3da;
   border-radius: 0.75rem;
   background: #f3f7f4;
+}
+
+.investment-calculator__disclaimer {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid #e4c889;
+  border-inline-start: 4px solid #9a650c;
+  border-radius: 0.75rem;
+  background: #fff7e6;
+  color: #62440f;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.investment-calculator__disclaimer h2 {
+  margin: 0 0 0.5rem;
+  color: #62440f;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.investment-calculator__disclaimer p {
+  margin: 0;
 }
 </style>

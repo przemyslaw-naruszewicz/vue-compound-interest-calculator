@@ -13,6 +13,10 @@ function checkAssociations(wrapper) {
   const ids = wrapper.findAll('[id]').map((node) => node.attributes('id'))
   expect(new Set(ids).size).toBe(ids.length)
   for (const calculator of wrapper.findAllComponents(InvestmentCalculator)) {
+    const disclaimer = calculator.get('aside')
+    expect(disclaimer.get(`[id="${disclaimer.attributes('aria-labelledby')}"]`).text())
+      .toBe('Not investment advice')
+    expect(disclaimer.isVisible()).toBe(true)
     for (const input of calculator.findAll('input')) {
       expect(calculator.get(`label[for="${input.attributes('id')}"]`).exists()).toBe(true)
       const descriptions = input.attributes('aria-describedby').split(' ')

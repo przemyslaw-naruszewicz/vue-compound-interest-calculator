@@ -48,6 +48,16 @@ try {
         && [...document.querySelectorAll('main, header, fieldset, input, dd, .investment-summary')]
           .every((element) => element.scrollWidth <= element.clientWidth + 1)
       )), true, `Overflow: ${target}, ${label}`)
+      assert.equal(await page.$$eval('.investment-form', (forms) => forms.every((form) => {
+        const box = form.getBoundingClientRect()
+        const title = form.querySelector('legend').getBoundingClientRect()
+        const fields = form.querySelector('.investment-form__fields').getBoundingClientRect()
+        const style = getComputedStyle(form)
+        return title.top >= box.top + parseFloat(style.paddingTop)
+          && title.left >= box.left + parseFloat(style.paddingLeft)
+          && title.right <= box.right - parseFloat(style.paddingRight) + 1
+          && title.bottom < fields.top
+      })), true, `Form title outside card: ${target}, ${label}`)
       assert.equal(await page.$$eval('input', (elements) => elements.every((element) => {
         const bounds = element.getBoundingClientRect()
         return bounds.width > 0 && bounds.height >= 44

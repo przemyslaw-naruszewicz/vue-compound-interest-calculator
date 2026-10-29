@@ -209,3 +209,31 @@ scaling do not replace those manual checks.
 
 The dated acceptance matrix, manual steps, and remaining checks are in
 [`docs/acceptance.md`](../../docs/acceptance.md).
+
+## Investment disclaimer checks
+
+Build the demo and independent reuse host together for an offline check:
+
+```sh
+node --input-type=module -e 'import { build } from "vite"; await build({ base: "/", build: { outDir: "/tmp/calculator-disclaimer-browser", emptyOutDir: true, rollupOptions: { input: ["index.html", "tests/browser/reuse.html"] } } });'
+mkdir -p /tmp/calculator-disclaimer-artifacts
+```
+
+Use the `calculator-browser-checks:008` image built above:
+
+```sh
+docker run --rm --network none --user 0:0 \
+  --mount type=bind,src="$PWD/tests/browser",dst=/checks,readonly \
+  --mount type=bind,src=/tmp/calculator-disclaimer-browser,dst=/build,readonly \
+  --mount type=bind,src=/tmp/calculator-disclaimer-artifacts,dst=/artifacts \
+  --env DISCLAIMER_ARTIFACT_DIR=/artifacts \
+  --entrypoint node calculator-browser-checks:008 \
+  /checks/check-disclaimer.mjs /build
+```
+
+Chromium and Firefox check the explicit disclaimer and its heading association,
+visibility with valid, invalid and all-zero inputs, text contrast of at least
+4.5:1, a minimum 16 px font, and no horizontal overflow at 320, 640 and 1280 px.
+The reuse host must retain the same notice styles without demo CSS. Full-page
+and notice screenshots are saved for visual review. This does not replace
+manual screen-reader or native browser zoom checks.

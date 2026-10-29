@@ -172,3 +172,46 @@ The GUI instructions are in the [README](../README.md#github-pages).
 Record actual workflow/site URLs, published revision, date, and live results
 when release checklist 011 is performed. The earlier native browser zoom and
 screen-reader checks also remain pending.
+
+## Investment disclaimer visibility — 2026-10-29
+
+The reusable calculator now displays a labelled "Not investment advice" notice
+immediately before its results. The notice has a distinct background, accent
+border and 16 px text. Financial assumptions remain below the results.
+
+All 486 unit/component tests, lint and the production build passed on Node
+24.22.1. The offline `tests/browser/check-disclaimer.mjs` run passed in Chromium
+156.0.8078.47 and Firefox 153.6.0 against production builds of the demo and the
+independent two-instance reuse host:
+
+- The notice remains visible with valid, invalid and all-zero inputs at 320,
+  640 and 1280 px.
+- Each notice has an instance-local heading association, text contrast of at
+  least 4.5:1 and a minimum 16 px font. Reuse retains the same notice styles
+  without demo CSS.
+- No horizontal overflow or browser errors/warnings occurred in the final run.
+  The Firefox check exposed the demo body's fixed 320 px minimum width exceeding
+  its 308 px content area with a vertical scrollbar; removing that minimum fixed
+  the overflow.
+
+Desktop and narrow screenshots were visually reviewed for the demo and reuse
+host. Artifacts are in `/tmp/calculator-disclaimer-artifacts/`; commands are in
+[the browser guide](../tests/browser/README.md#investment-disclaimer-checks).
+Manual screen-reader and native browser zoom checks remain pending as recorded
+above; no hosted deployment was performed.
+
+The existing production public-component regression also passed in Chromium,
+including API events, input recovery, formatting and responsive scoped styles.
+
+## Form title containment — 2026-10-29
+
+The "Investment parameters" legend now sits inside the white form card with
+padding above it and space before the controls. Native fieldset/legend semantics
+are preserved. Browser regression checks assert that its bounds remain inside
+the card and above the controls, including wrapped text and 200% CSS zoom.
+
+All 31 form tests, lint and the production build passed. The independent reuse
+checks passed in Chromium 156.0.8078.47 and Firefox 153.6.0; the demo checks
+passed in Chromium at 320, 640 and 1280 px. Narrow screenshots were reviewed.
+Artifacts are in `/tmp/calculator-form-heading-artifacts/` and
+`/tmp/calculator-form-heading-demo-artifacts/`.
